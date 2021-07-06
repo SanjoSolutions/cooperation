@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cooperation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas></canvas>
+  <script>
+    const canvas = document.querySelector('canvas')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const context = canvas.getContext('2d')
+
+    const units = [
+      createUnit(),
+      createUnit()
+    ]
+
+    const radius = 9
+
+    const circles = [
+      {x: radius, y: radius},
+      {x: 2 * radius + 4 * 2 * radius + radius, y: radius}
+    ]
+
+    function createUnit() {
+      return {
+        x: 0,
+        y: 0
+      }
+    }
+
+    const keyStates = new Map([
+      ['KeyW', false],
+      ['KeyA', false],
+      ['KeyS', false],
+      ['KeyD', false],
+      ['ArrowUp', false],
+      ['ArrowLeft', false],
+      ['ArrowDown', false],
+      ['ArrowRight', false]
+    ])
+
+    window.addEventListener('keydown', function (event) {
+      const code = event.code
+      if (keyStates.has(code)) {
+        keyStates.set(code, true)
+      }
+    })
+
+    window.addEventListener('keyup', function (event) {
+      const code = event.code
+      if (keyStates.has(code)) {
+        keyStates.set(code, false)
+      }
+    })
+
+    context.strokeStyle = 'black'
+    context.fillStyle = 'black'
+
+    function render() {
+      context.clearRect(0, 0, canvas.width, canvas.height)
+
+      context.beginPath()
+      context.arc(circles[0].x, circles[0].y, radius, 0, 2 * Math.PI)
+      context.stroke()
+
+      if (!areUnitsOnAllCircles(units, circles)) {
+        context.fillRect(2 * radius, 0, 4 * 2 * radius, 2 * radius)
+      }
+
+      context.beginPath()
+      context.arc(circles[1].x, circles[1].y, radius, 0, 2 * Math.PI)
+      context.stroke()
+
+      for (const unit of units) {
+        renderUnit(unit)
+      }
+    }
+
+    function renderUnit(unit) {
+      context.beginPath()
+      context.arc(unit.x, unit.y, radius, 0, 2 * Math.PI)
+      context.fill()
+    }
+
+    function onTick() {
+      move()
+      
+      render()
+
+      scheduleNextTick()
+    }
+
+    function move() {
+      if (keyStates.get('KeyW')) {
+        units[0].y -= 0.5
+      }
+      if (keyStates.get('KeyA')) {
+        units[0].x -= 0.5
+      }
+      if (keyStates.get('KeyS')) {
+        units[0].y += 0.5
+      }
+      if (keyStates.get('KeyD')) {
+        units[0].x += 0.5
+      }
+      if (keyStates.get('ArrowUp')) {
+        units[1].y -= 0.5
+      }
+      if (keyStates.get('ArrowLeft')) {
+        units[1].x -= 0.5
+      }
+      if (keyStates.get('ArrowDown')) {
+        units[1].y += 0.5
+      }
+      if (keyStates.get('ArrowRight')) {
+        units[1].x += 0.5
+      }
+    }
+
+    function scheduleNextTick() {
+      requestAnimationFrame(onTick)
+    }
+
+    scheduleNextTick()
+
+    function areUnitsOnAllCircles(units, circles) {
+      return (
+        (isUnitOnCircle(units[0], circles[0]) && isUnitOnCircle(units[1], circles[1])) ||
+        (isUnitOnCircle(units[0], circles[1]) && isUnitOnCircle(units[1], circles[0]))
+      )
+    }
+
+    function isUnitOnCircle(unit, circle) {
+      return Math.abs(unit.x - circle.x) <= 2 && Math.abs(unit.y - circle.y) <= 2
+    }
+
+    render()
+  </script>
+</body>
+</html>
